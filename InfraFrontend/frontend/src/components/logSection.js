@@ -19,8 +19,10 @@ export default function LogSection() {
     setLoading(true);
     try {
       const query = `from(bucket:%20%22SegFault%22)%20%7C%3E%20range(start:%20${startTime},%20stop:%20${stopTime})`;
-      // const response = await axios.get(`http://127.0.0.1:57091/api/influxdb/query?query=${query}`);
-      const response = await axios.get("http://127.0.0.1:57091/api/influxdb/query?query=from(bucket:%20%22SegFault%22)%20%7C%3E%20range(start:%202024-09-01T00:00:00Z,%20stop:%202024-09-30T23:59:59Z)");
+
+      const response = await axios.get(`http://127.0.0.1:57091/api/influxdb/query?query=${query}`);
+      // const response = await axios.get("http://127.0.0.1:57091/api/influxdb/query?query=from(bucket:%20%22SegFault%22)%20%7C%3E%20range(start:%202024-09-01T00:00:00Z,%20stop:%202024-09-30T23:59:59Z)");
+      console.log(response.data.length);
       setLogs(response.data); // Directly set fetched logs
       setError(null);
     } catch (err) {
@@ -44,8 +46,15 @@ export default function LogSection() {
     setTimeFilter(filter);
     // Calculate start and stop times based on filter
     const now = new Date();
-    const stopTime = now.toISOString();
-    const startTime = new Date(now.getTime() - filter * 1000).toISOString(); // Subtracting filter in seconds
+    const stopTime = getTimeInISOFormat(now);
+    var startTime = getTimeInISOFormat(new Date(now.getTime() - filter * 1000));
+
+    if (filter==0){
+      startTime = getTimeInISOFormat(new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000));
+    }
+    // const now = new Date();
+    // const stopTime = now.toISOString();
+    // const startTime = new Date(now.getTime() - filter * 1000).toISOString(); // Subtracting filter in seconds
     fetchLogs(startTime, stopTime); // Fetch logs based on the selected time filter
   };
 
@@ -59,7 +68,10 @@ export default function LogSection() {
     const fetchInitialLogs = async () => {
       const now = new Date();
       const stopTime = getTimeInISOFormat(now);
-      const startTime = getTimeInISOFormat(new Date(now.getTime() - timeFilter * 1000));
+      var startTime = getTimeInISOFormat(new Date(now.getTime() - 50 * 1000));
+      if (timeFilter==0){
+        startTime = getTimeInISOFormat(new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000));
+      }
       // const now = new Date();
       // const stopTime = now.toISOString();
       // const startTime = new Date(now.getTime() - timeFilter * 1000).toISOString(); // Initial fetch based on time filter

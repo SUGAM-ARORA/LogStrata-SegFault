@@ -39,7 +39,7 @@ export default function Page() {
     return (
         <div className="w-full flex flex-col bg-black">
             <Navbar />
-            {loading ? (
+            {/* {loading ? (
                 <div className="flex-1"><Loading /></div>
             ) : (
                 <>
@@ -47,7 +47,12 @@ export default function Page() {
                     <div className="flex-1"><GraphSection /></div>
                     <div className="flex-2 overflow-y-auto"><LogSection /></div>
                 </>
-            )}
+            )} */}
+            <>
+                    <div><Hero/></div>
+                    <div className="flex-1"><GraphSection /></div>
+                    <div className="flex-2 overflow-y-auto"><LogSection /></div>
+                </>
         </div>
     );
 }

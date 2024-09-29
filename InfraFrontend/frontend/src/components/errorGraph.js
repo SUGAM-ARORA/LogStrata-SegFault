@@ -8,11 +8,11 @@ const ErrorChart = () => {
     const canvasRef = useRef(null);
     const [chartInstance, setChartInstance] = useState(null);
 
-    // Function to generate mock log data
+    // Function to generate mock log data with only 400 and 500 values
     const generateLogData = () => {
         const currentTime = new Date();
         const timestamp = `${currentTime.getMonth() + 1}/${currentTime.getDate()} ${currentTime.getHours()}:${String(currentTime.getMinutes()).padStart(2, '0')}:${String(currentTime.getSeconds()).padStart(2, '0')}`;
-        const statusCode = Math.floor(Math.random() * (501 - 100)) + 100; // Random status code between 100 and 500
+        const statusCode = Math.random() < 0.5 ? 400 : 500; // Randomly choose between 400 and 500
         return [timestamp, Math.floor(currentTime.getTime() / 1000), statusCode];
     };
 
@@ -27,7 +27,6 @@ const ErrorChart = () => {
                 datasets: [{
                     label: 'Error Codes',
                     data: [],
-                    // Change to light reddish color for error indication
                     borderColor: 'rgba(255, 99, 132, 1)', // Light reddish color for the line
                     backgroundColor: 'rgba(255, 99, 132, 0.2)', // Light reddish background
                     borderWidth: 2,
@@ -55,10 +54,10 @@ const ErrorChart = () => {
                             text: 'Error Codes',
                         },
                         beginAtZero: true,
-                        suggestedMin: 100,
-                        suggestedMax: 500,
+                        suggestedMin: 400, // Min value set to 400
+                        suggestedMax: 500, // Max value set to 500
                         ticks: {
-                            stepSize: 100,
+                            stepSize: 100, // Show 400 and 500 on y-axis
                         },
                     },
                 },
@@ -103,7 +102,7 @@ const ErrorChart = () => {
 
                 chartInstance.update('none'); // Update the chart without animation
             }
-        }, 500); // Update every half second
+        }, 10000); // Update every 10 seconds
 
         return () => clearInterval(intervalId);
     }, [chartInstance]);

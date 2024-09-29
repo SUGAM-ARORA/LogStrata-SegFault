@@ -24,7 +24,7 @@ const LogChart = () => {
     const generateLogData = () => {
         const currentTime = new Date();
         const timestamp = `${currentTime.getMonth() + 1}/${currentTime.getDate()} ${currentTime.getHours()}:${String(currentTime.getMinutes()).padStart(2, '0')}:${String(currentTime.getSeconds()).padStart(2, '0')}`;
-        const statusCode = Math.floor(Math.random() * (501 - 100)) + 100; // Random status code between 100 and 500
+        const statusCode = Math.ceil(Math.random() * 5) * 100; // Generate random status code rounded to the nearest 100
         return { timestamp, statusCode };
     };
 
