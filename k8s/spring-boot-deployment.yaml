@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: spring-boot-app
-          image: jksingh13/stgi-backend:latest
+          image: jksingh13/stgi-backend:1.0.0
           ports:
             - containerPort: 8080

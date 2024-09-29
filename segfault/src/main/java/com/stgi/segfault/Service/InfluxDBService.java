@@ -34,7 +34,10 @@ public class InfluxDBService {
             for (FluxRecord fluxRecord : records) {
                 InfluxQueryResult result = new InfluxQueryResult();
                 result.setTime(fluxRecord.getTime());
-                result.setValue(fluxRecord.getValueByKey("_value"));
+                result.setValue((String) fluxRecord.getValueByKey("_value"));
+                result.setMeasurement((String) fluxRecord.getValueByKey("_measurement"));
+                result.setField((String) fluxRecord.getValueByKey("_field"));
+                result.setSeq((String) fluxRecord.getValueByKey("_seq"));
                 results.add(result); // Collect the result in a list
             }
         }
