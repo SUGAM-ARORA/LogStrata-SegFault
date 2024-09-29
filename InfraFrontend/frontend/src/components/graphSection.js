@@ -1,7 +1,7 @@
 import LogChart from "./apiChart";
 import ErrorChart from "./errorGraph";
 import { styles } from "./styles";
-
+import PieChart from "./pieGraph";
 export default function GraphSection(){
     return (
         <div>
@@ -12,6 +12,7 @@ export default function GraphSection(){
         <div className="flex flex-row justify-center gap-x-20 p-2">
         <LogChart/>
         <ErrorChart/>
+        {/* <PieChart/> */}
         </div>
         </div>
         </div>

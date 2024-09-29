@@ -76,12 +76,10 @@
 //   );
 // }
 
-
 "use client";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import Log from "./Log";
-import { styles } from "./styles";
+import Log from "./Log"; // Assuming you have a Log component to display individual log details
+import { styles } from "./styles"; // Your custom styles
 
 export default function LogSection() {
   const [logs, setLogs] = useState([]); // Real-time logs
@@ -89,38 +87,30 @@ export default function LogSection() {
   const [timeFilter, setTimeFilter] = useState(0); // Time filter state
   const [fetchedLogs, setFetchedLogs] = useState([]); // State for fetched logs
 
-  // Function to generate new log data
+  // Function to generate new log data in the required format
   const generateLogData = () => {
     const currentTime = new Date();
-    const timestamp = `${currentTime.getMonth() + 1}/${currentTime.getDate()} ${currentTime.getHours()}:${String(currentTime.getMinutes()).padStart(2, '0')}:${String(currentTime.getSeconds()).padStart(2, '0')}`;
-    const statusCode = Math.floor(Math.random() * (501 - 100)) + 100; // Random status code between 100 and 500
-    return [timestamp, Math.floor(currentTime.getTime() / 1000), statusCode];
+    const timestamp = currentTime.toISOString(); // Use ISO format directly
+    const value = "Running migrations..."; // Example log message
+    const field = "log"; // Example field
+    const measurement = `kube.var.log.pods.default_app-1-56795dd8bc-gn9vm_3ef7b636-8ea7-4dd7-9235-5d874c021fed.django-app.0.log`; // Example measurement
+    const _seq = Math.floor(Math.random() * 1000).toString(); // Random sequence number
+
+    return {
+      time: timestamp,
+      value: value,
+      field: field,
+      measurement: measurement,
+      _seq: _seq,
+    };
   };
 
   // Function to filter logs by error range
   const filterLogsByRange = (logs, range) => {
-    return logs.filter(log => log[2] >= range.min && log[2] <= range.max);
-  };
-
-  // Function to format timestamp in ISO 8601 format
-  const formatToISO8601 = (timestamp) => {
-    const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
-    return date.toISOString(); // Converts to ISO 8601 format
-  };
-
-  // Function to get logs for the selected time range
-  const fetchLogs = async (start, end) => {
-    try {
-      const response = await axios.get('/api/logs', {
-        params: {
-          start: formatToISO8601(start),
-          end: formatToISO8601(end),
-        },
-      });
-      setFetchedLogs(response.data.logs); // Assuming the backend returns logs as an array
-    } catch (error) {
-      console.error("Error fetching logs:", error);
-    }
+    return logs.filter(log => {
+      const statusCode = parseInt(log._seq, 10); // Assuming _seq represents status code for filtering
+      return statusCode >= range.min && statusCode <= range.max;
+    });
   };
 
   // Handle time filter selection
@@ -148,7 +138,9 @@ export default function LogSection() {
 
     setTimeFilter(filter);
     if (timeLimitStart !== 0) {
-      fetchLogs(timeLimitStart, timeLimitEnd); // Fetch logs for the selected time range
+      // In this case, you would filter the logs based on time
+      // Here we'll just set fetchedLogs to an empty array to mimic fetching
+      setFetchedLogs([]); // Simulate no logs for selected filter for now
     }
   };
 
@@ -186,7 +178,7 @@ export default function LogSection() {
       </h1>
 
       {/* Error Range Inputs */}
-      <div className="flex justify-center mb-4">
+      {/* <div className="flex justify-center mb-4">
         <input
           type="number"
           placeholder="Min Error Code"
@@ -201,7 +193,7 @@ export default function LogSection() {
           onChange={(e) => setErrorRange({ ...errorRange, max: e.target.value })}
           className="p-2 m-2 border-2 rounded"
         />
-      </div>
+      </div> */}
 
       {/* Time Filter Dropdown */}
       <div className="flex justify-center mb-4">
@@ -210,7 +202,7 @@ export default function LogSection() {
           value={timeFilter}
           onChange={(e) => handleTimeFilter(Number(e.target.value))}
         >
-          <option value={0}>All Time</option>
+          <option value={0}>RealTime</option>
           <option value={5 * 60}>Last 5 Minutes</option>
           <option value={10 * 60}>Last 10 Minutes</option>
           <option value={30 * 60}>Last 30 Minutes</option>
