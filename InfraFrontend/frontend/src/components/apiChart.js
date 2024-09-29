@@ -12,7 +12,7 @@ const LogChart = () => {
     const [selectedRange, setSelectedRange] = useState("all"); // Track the selected range
 
     const statusOptions = [
-        { label: "All Status Codes", value: "all" },
+        { label: "All ", value: "all" },
         { label: "1xx", value: "1xx" },
         { label: "2xx", value: "2xx" },
         { label: "3xx", value: "3xx" },
