@@ -76,20 +76,19 @@
 //   );
 // }
 
-
 "use client";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import Log from "./Log";
 import { styles } from "./styles";
+import axios from "axios"; // Ensure axios is imported
 
 export default function LogSection() {
-  const [logs, setLogs] = useState([]); // Real-time logs
-  const [errorRange, setErrorRange] = useState({ min: 100, max: 500 });
-  const [timeFilter, setTimeFilter] = useState(0); // Time filter state
-  const [fetchedLogs, setFetchedLogs] = useState([]); // State for fetched logs
+  const [logs, setLogs] = useState([]);
+  const [errorRange, setErrorRange] = useState({ min: 100, max: 500 }); // State for error range
+  const [timeFilter, setTimeFilter] = useState(0); // 0 for real-time, other values for time filters
+  const [fetchedLogs, setFetchedLogs] = useState([]);
 
-  // Function to generate new log data
+  // Function to generate new log data (if needed for real-time logging)
   const generateLogData = () => {
     const currentTime = new Date();
     const timestamp = `${currentTime.getMonth() + 1}/${currentTime.getDate()} ${currentTime.getHours()}:${String(currentTime.getMinutes()).padStart(2, '0')}:${String(currentTime.getSeconds()).padStart(2, '0')}`;
@@ -97,62 +96,43 @@ export default function LogSection() {
     return [timestamp, Math.floor(currentTime.getTime() / 1000), statusCode];
   };
 
-  // Function to filter logs by error range
-  const filterLogsByRange = (logs, range) => {
-    return logs.filter(log => log[2] >= range.min && log[2] <= range.max);
-  };
+  // Fetch logs based on the selected time range
+  const fetchLogs = async (timeRange) => {
+    const currentTimestamp = new Date().toISOString();
+    let startTimestamp;
 
-  // Function to format timestamp in ISO 8601 format
-  const formatToISO8601 = (timestamp) => {
-    const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
-    return date.toISOString(); // Converts to ISO 8601 format
-  };
+    switch (timeRange) {
+      case 5:
+        startTimestamp = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 minutes ago
+        break;
+      case 10:
+        startTimestamp = new Date(Date.now() - 10 * 60 * 1000).toISOString(); // 10 minutes ago
+        break;
+      case 30:
+        startTimestamp = new Date(Date.now() - 30 * 60 * 1000).toISOString(); // 30 minutes ago
+        break;
+      case 60:
+        startTimestamp = new Date(Date.now() - 60 * 60 * 1000).toISOString(); // 1 hour ago
+        break;
+      default:
+        startTimestamp = currentTimestamp; // If no valid time range is selected, do not fetch logs
+        break;
+    }
 
-  // Function to get logs for the selected time range
-  const fetchLogs = async (start, end) => {
+    // Make a request to your backend API to get logs in the selected time range
     try {
       const response = await axios.get('/api/logs', {
         params: {
-          start: formatToISO8601(start),
-          end: formatToISO8601(end),
-        },
+          start: startTimestamp,
+          end: currentTimestamp,
+        }
       });
-      setFetchedLogs(response.data.logs); // Assuming the backend returns logs as an array
+      setFetchedLogs(response.data); // Assuming response.data contains the logs
     } catch (error) {
       console.error("Error fetching logs:", error);
     }
   };
 
-  // Handle time filter selection
-  const handleTimeFilter = (filter) => {
-    const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds since epoch
-    let timeLimitStart = currentTime; // Start time for fetching logs
-    let timeLimitEnd = currentTime; // End time for fetching logs
-
-    switch (filter) {
-      case 5 * 60: // Last 5 minutes
-        timeLimitStart = currentTime - 5 * 60;
-        break;
-      case 10 * 60: // Last 10 minutes
-        timeLimitStart = currentTime - 10 * 60;
-        break;
-      case 30 * 60: // Last 30 minutes
-        timeLimitStart = currentTime - 30 * 60;
-        break;
-      case 60 * 60: // Last 1 hour
-        timeLimitStart = currentTime - 60 * 60;
-        break;
-      default:
-        timeLimitStart = 0; // No time filter, fetch all logs
-    }
-
-    setTimeFilter(filter);
-    if (timeLimitStart !== 0) {
-      fetchLogs(timeLimitStart, timeLimitEnd); // Fetch logs for the selected time range
-    }
-  };
-
-  // Effect for generating new logs (if no time filter is active)
   useEffect(() => {
     let intervalId;
 
@@ -168,24 +148,28 @@ export default function LogSection() {
         });
       }, 500); // Update every half second
     } else {
-      // When a time filter is applied, set the logs to the fetched logs
-      setLogs(fetchedLogs); 
+      // When a time filter is applied, fetch the logs for the past selected time range
+      fetchLogs(timeFilter);
+      setLogs(fetchedLogs); // Set logs to the fetched logs
     }
 
     // Cleanup the interval on component unmount
     return () => clearInterval(intervalId);
   }, [timeFilter, fetchedLogs]); // Include fetchedLogs and timeFilter in the dependency array
 
-  // Filter logs by error range
-  const filteredLogs = filterLogsByRange(timeFilter === 0 ? logs : fetchedLogs, errorRange);
+  // Filter logs based on error range
+  const filterLogsByRange = (logs, range) => {
+    return logs.filter(log => log[2] >= range.min && log[2] <= range.max);
+  };
+
+  const filteredLogs = filterLogsByRange(logs, errorRange);
 
   return (
-    <div className="log-section flex flex-col m-5 p-5 shadow-xl my-10 bg-[#16141A] border-2 border-white rounded-lg">
+    <div className="log-section flex flex-col m-5 p-5 shadow-xl my-10 bg-[#16141A] border-2 border-white rounded-lg ">
       <h1 className={`${styles.heroHeadText} text-white flex justify-center mb-10`}>
-        Log<span className="text-[#915EFF]">Section</span>
+        Log<span className='text-[#915EFF]'>Section</span>
       </h1>
-
-      {/* Error Range Inputs */}
+      
       <div className="flex justify-center mb-4">
         <input
           type="number"
@@ -203,27 +187,11 @@ export default function LogSection() {
         />
       </div>
 
-      {/* Time Filter Dropdown */}
-      <div className="flex justify-center mb-4">
-        <select
-          className="p-2 m-2 border-2 rounded"
-          value={timeFilter}
-          onChange={(e) => handleTimeFilter(Number(e.target.value))}
-        >
-          <option value={0}>All Time</option>
-          <option value={5 * 60}>Last 5 Minutes</option>
-          <option value={10 * 60}>Last 10 Minutes</option>
-          <option value={30 * 60}>Last 30 Minutes</option>
-          <option value={60 * 60}>Last 1 Hour</option>
-        </select>
-      </div>
-
-      {/* Log Display */}
-      <div className="overflow-y-auto h-[250px] shadow-md bg-[#16141A]">
+      <div className="overflow-y-auto h-[250px] shadow-md bg-[#16141A] ">
         {filteredLogs.length === 0 ? (
           <p className="text-center text-gray-500">No logs available.</p>
         ) : (
-          <ul className="p-10 rounded-lg">
+          <ul className="p-10 rounded-lg ">
             {filteredLogs.map((log, index) => (
               <li className="text-white" key={index}>
                 <Log logData={log} />
@@ -235,3 +203,4 @@ export default function LogSection() {
     </div>
   );
 }
+
