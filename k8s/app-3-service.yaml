@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: logger-hackathon-service
+  namespace: default  # Change to your desired namespace
+spec:
+  selector:
+    app: logger-hackathon
+  ports:
+    - protocol: TCP
+      port: 80  # Change to your application's port
+      targetPort: 7000  # Change to the container's port
+  type: NodePort  # Change to LoadBalancer if using cloud services

@@ -18,3 +18,6 @@ spec:
       containers:
         - name: logger-hackathon
           image: tjain598/logger-hackathon:latest
+          env:
+            - name: ALLOWED_HOSTS
+              value: "172.17.0.3,localhost,127.0.0.1"  # Add any additional hosts as needed
